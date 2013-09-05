@@ -29,7 +29,7 @@
 #define get16bits(d) (*((const uint16_t *) (d)))
 
 
-namespace hashfilter {
+namespace cuckoofilter {
     /*
       -------------------------------------------------------------------------------
       hashlittle() -- hash a variable-length key into a 32-bit value
@@ -580,4 +580,4 @@ namespace hashfilter {
 
         return std::string((char*)md_value, (size_t)md_len);
     }
-} // namespace hashfilter
+} // namespace cuckoofilter

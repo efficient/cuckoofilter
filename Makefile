@@ -1,40 +1,27 @@
-
-UNAME := $(shell uname -a)
 CC = g++
-#ifeq ($(firstword $(filter Linux,$(UNAME))),Linux)
-#  CC = g++
-#endif
-#ifeq ($(firstword $(filter Darwin,$(UNAME))),Darwin)
-#  CC = g++-4.7
-#endif
 
 # Uncomment one of the following to switch between debug and opt mode
-OPT = -std=c++0x -O3 -DNDEBUG
-#OPT = -std=c++0x -g -ggdb
+#OPT = -O3 -DNDEBUG
+OPT = -g -ggdb
 
-CFLAGS += -Wall -c -I. -I./include -I/usr/include/ -I./filter/ $(OPT)
+CFLAGS += -Wall -c -I. -I./include -I/usr/include/ -I./src/ $(OPT)
 
 LDFLAGS+= -Wall -lpthread -lssl -lcrypto
 
 LIBOBJECTS = \
-	./filter/hashutil.o \
-	./filter/printutil.o \
+	./src/hashutil.o \
 
-HEADERS = $(wildcard filter/*.h)
+HEADERS = $(wildcard src/*.h)
 
-BENCH = bench_filter
+TEST = test
 
-
-PROGRAMS = $(BENCH)
-
-all: $(PROGRAMS)
+all: $(TEST)
 
 clean:
-	rm -f $(PROGRAMS) */*.o
+	rm -f $(TEST) */*.o
 
-bench_filter: bench/bench_filter.o $(LIBOBJECTS) 
-	$(CC) bench/bench_filter.o $(LIBOBJECTS) $(LDFLAGS) -o $@
-
+test: example/test.o $(LIBOBJECTS) 
+	$(CC) example/test.o $(LIBOBJECTS) $(LDFLAGS) -o $@
 
 %.o: %.cc ${HEADERS} Makefile
 	$(CC) $(CFLAGS) $< -o $@

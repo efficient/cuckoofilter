@@ -10,7 +10,7 @@
 
 
 
-namespace hashfilter {
+namespace cuckoofilter {
     class HashUtil {
     public:
         // Bob Jenkins Hash

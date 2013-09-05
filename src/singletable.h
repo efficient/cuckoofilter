@@ -6,19 +6,20 @@
 #include <xmmintrin.h>
 #include <assert.h>
 
-#include "filter_common.h"
 #include "printutil.h"
 #include "bitsutil.h"
 #include "debug.h"
 
 
-namespace hashfilter {
+namespace cuckoofilter {
 
     // the most naive table implementation: one huge bit array
-    template <size_t bits_per_tag,  size_t tags_per_bucket,  size_t num_buckets, bool incache>
+    template <size_t bits_per_tag>
     class SingleTable {
+        static const size_t tags_per_bucket  = 4;
+        static const size_t bytes_per_bucket = (bits_per_tag * tags_per_bucket + 7) >> 3;
 
-        static const size_t bytes_per_bucket = (bits_per_tag * tags_per_bucket) >> 3;
+        size_t num_buckets;
 
         struct Bucket {
             char bits_[bytes_per_bucket];
@@ -28,16 +29,29 @@ namespace hashfilter {
         Bucket *buckets_;
 
     public:
-        static const uint32_t INDEXMASK = num_buckets - 1;
         static const uint32_t TAGMASK = (1ULL << bits_per_tag) - 1;
 
-        SingleTable() {
+        explicit
+        SingleTable(size_t num) {
+            num_buckets = num;
             buckets_ = new Bucket[num_buckets];
             CleanupTags();
         }
 
         ~SingleTable() {
             delete [] buckets_;
+        }
+
+        size_t IndexHash(uint32_t hv) {
+            size_t index = hv % num_buckets;
+            return index;
+        }
+
+        uint32_t TagHash(uint32_t hv) {
+            uint32_t tag;
+            tag  = hv & TAGMASK;
+            tag += (tag == 0);
+            return tag;
         }
 
         void CleanupTags() { memset(buckets_, 0, bytes_per_bucket * num_buckets); }
@@ -61,45 +75,22 @@ namespace hashfilter {
             uint32_t tag;
             /* following code only works for little-endian */
             if (bits_per_tag == 2) {
-                if (! incache) {
-                    _mm_prefetch(p, _MM_HINT_NTA);
-                }
                 tag = *((uint8_t*) p) >> (j * 2);
             }
             else if (bits_per_tag == 4) {
                 p += (j >> 1);
-                if (! incache) {
-                    _mm_prefetch(p, _MM_HINT_NTA);
-                }
-                //if ( (j & 1) == 0)
-                //    tag = *((uint8_t*) p);
-                //else
-                //    tag = *((uint8_t*) p) >> 4;
                 tag = *((uint8_t*) p) >> ((j & 1) << 2);
             }
             else if (bits_per_tag == 8) {
                 p += j;
-                if (! incache) {
-                    _mm_prefetch(p, _MM_HINT_NTA);
-                }
                 tag = *((uint8_t*) p);
             }
             else if (bits_per_tag == 12) {
                 p += j + (j >> 1);
-                if (! incache) {
-                    _mm_prefetch(p, _MM_HINT_NTA);
-                }
-                //if ( (j & 1) == 0)
-                //    tag = *((uint16_t*) p);
-                //else
-                //    tag = *((uint16_t*) p) >> 4;
                 tag = *((uint16_t*) p) >> ((j & 1) << 2);
             }
             else if (bits_per_tag == 16) {
                 p += (j << 1);
-                if (! incache) {
-                    _mm_prefetch(p, _MM_HINT_NTA);
-                }
                 tag = *((uint16_t*) p);
             }
             else if (bits_per_tag == 32) {

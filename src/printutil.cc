@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "printutil.h"
 
-namespace hashfilter {
+namespace cuckoofilter {
 
     std::string PrintUtil::bytes_to_hex(const char* data, size_t len)
     {
@@ -17,11 +17,11 @@ namespace hashfilter {
             hexstr.push_back(hexes[16]);
         }
         return hexstr;
-    }
+    };
 
     std::string PrintUtil::bytes_to_hex(const std::string& s)
     {
         return bytes_to_hex((const char *)s.data(), s.size());
-    }
+    };
 
 }
