@@ -31,6 +31,16 @@ namespace cuckoofilter {
 
         static const size_t MAX_CUCKOO_COUNT = 500;
 
+        inline size_t IndexHash(uint32_t hv) const {
+            return hv % table_->num_buckets;
+        }
+
+        inline uint32_t TagHash(uint32_t hv) const {
+            uint32_t tag = hv & table_->TAGMASK;
+            tag += (tag == 0);
+            return tag;
+        }
+
         inline void IndexTagHash(const KeyType &key,
                                  size_t &index,
                                  uint32_t &tag) const {
@@ -39,18 +49,16 @@ namespace cuckoofilter {
                                                    sizeof(key));
             uint64_t hv = *((uint64_t*) hashed_key.c_str());
 
-            index = table_->IndexHash((uint32_t) (hv >> 32));
-            tag   = table_->TagHash((uint32_t) (hv & 0xFFFFFFFF));
+            index = IndexHash((uint32_t) (hv >> 32));
+            tag   = TagHash((uint32_t) (hv & 0xFFFFFFFF));
         }
 
         inline size_t AltIndex(const size_t index, const uint32_t tag) const {
-            //
-            // originally we use:
+            // NOTE(binfan): originally we use:
             // index ^ HashUtil::BobHash((const void*) (&tag), 4)) & table_->INDEXMASK;
             // now doing a quick-n-dirty way:
             // 0x5bd1e995 is the hash constant from MurmurHash2
-            //
-            return table_->IndexHash((uint32_t) (index ^ (tag * 0x5bd1e995)));
+            return IndexHash((uint32_t) (index ^ (tag * 0x5bd1e995)));
         }
 
         struct {

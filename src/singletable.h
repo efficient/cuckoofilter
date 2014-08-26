@@ -19,7 +19,6 @@ namespace cuckoofilter {
         static const size_t tags_per_bucket  = 4;
         static const size_t bytes_per_bucket = (bits_per_tag * tags_per_bucket + 7) >> 3;
 
-        size_t num_buckets;
 
         struct Bucket {
             char bits_[bytes_per_bucket];
@@ -30,6 +29,7 @@ namespace cuckoofilter {
 
     public:
         static const uint32_t TAGMASK = (1ULL << bits_per_tag) - 1;
+        size_t num_buckets;
 
         explicit
         SingleTable(size_t num) {
@@ -40,18 +40,6 @@ namespace cuckoofilter {
 
         ~SingleTable() {
             delete [] buckets_;
-        }
-
-        size_t IndexHash(uint32_t hv) {
-            size_t index = hv % num_buckets;
-            return index;
-        }
-
-        uint32_t TagHash(uint32_t hv) {
-            uint32_t tag;
-            tag  = hv & TAGMASK;
-            tag += (tag == 0);
-            return tag;
         }
 
         void CleanupTags() { memset(buckets_, 0, bytes_per_bucket * num_buckets); }
