@@ -26,5 +26,3 @@ test: example/test.o $(LIBOBJECTS)
 %.o: %.cc ${HEADERS} Makefile
 	$(CC) $(CFLAGS) $< -o $@
 
-# TODO(gabor): dependencies for .o files
-# TODO(gabor): Build library
