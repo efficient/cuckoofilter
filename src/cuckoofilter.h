@@ -4,6 +4,7 @@
 
 #include "debug.h"
 #include "hashutil.h"
+#include "packedtable.h"
 #include "printutil.h"
 #include "singletable.h"
 
@@ -12,7 +13,7 @@
 using namespace std;
 
 namespace cuckoofilter {
-    // status returned by cuckoo filter
+    // status returned by a cuckoo filter operation
     enum Status {
         Ok = 0,
         NotFound = 1,
@@ -20,28 +21,34 @@ namespace cuckoofilter {
         NotSupported = 3,
     };
 
-    // Cuckoo filter exposes a Bloomier filter interface. It provides
-    // methods of Add, Delete, Contain to insert, remove and detect items
-    template <typename KeyType,
-              size_t bits_per_key,
+    // A cuckoo filter class exposes a Bloomier filter interface,
+    // providing methods of Add, Delete, Contain. It takes three
+    // template parameters:
+    //   ItemType:  the type of item you want to insert
+    //   bits_per_item: how many bits each item is hashed into
+    //   TableType: the storage of table, SingleTable by default, and
+    // PackedTable to enable semi-sorting 
+    template <typename ItemType,
+              size_t bits_per_item,
               template<size_t> class TableType = SingleTable>
     class CuckooFilter {
-        TableType<bits_per_key> *table_;
+        TableType<bits_per_item> *table_;
         size_t  num_keys;
 
-        static const size_t MAX_CUCKOO_COUNT = 500;
+        static const size_t kMaxCuckooCount = 500;
 
         inline size_t IndexHash(uint32_t hv) const {
             return hv % table_->num_buckets;
         }
 
         inline uint32_t TagHash(uint32_t hv) const {
-            uint32_t tag = hv & table_->TAGMASK;
+            uint32_t tag;
+            tag = hv & ((1ULL << bits_per_item) - 1);
             tag += (tag == 0);
             return tag;
         }
 
-        inline void IndexTagHash(const KeyType &key,
+        inline void IndexTagHash(const ItemType &key,
                                  size_t &index,
                                  uint32_t &tag) const {
 
@@ -87,7 +94,7 @@ namespace cuckoofilter {
                 num_buckets <<= 1;
             }
             victim.used = false;
-            table_  = new TableType<bits_per_key>(num_buckets);
+            table_  = new TableType<bits_per_item>(num_buckets);
         }
 
         ~CuckooFilter() {
@@ -96,13 +103,13 @@ namespace cuckoofilter {
 
 
         // Add a key to the filter.
-        Status Add(const KeyType& key);
+        Status Add(const ItemType& key);
 
         // Report if the key is inserted, with false positive rate.
-        Status Contain(const KeyType& key) const;
+        Status Contain(const ItemType& key) const;
 
         // Delete a key from the hash table
-        Status Delete(const KeyType& key);
+        Status Delete(const ItemType& key);
 
         /* methods for providing stats  */
         // summary infomation
@@ -116,11 +123,11 @@ namespace cuckoofilter {
     }; // declaration of class CuckooFilter
 
 
-    template <typename KeyType,
-              size_t bits_per_key,
+    template <typename ItemType,
+              size_t bits_per_item,
               template<size_t> class TableType>
     Status
-    CuckooFilter<KeyType, bits_per_key, TableType>::Add(const KeyType& key) {
+    CuckooFilter<ItemType, bits_per_item, TableType>::Add(const ItemType& key) {
         DPRINTF(DEBUG_CUCKOO, "\nCuckooFilter::Add(key)\n");
         if (victim.used) {
             DPRINTF(DEBUG_CUCKOO, "not enough space\n");
@@ -133,18 +140,18 @@ namespace cuckoofilter {
         return AddImpl(i, tag);
     }
 
-    template <typename KeyType,
-              size_t bits_per_key,
+    template <typename ItemType,
+              size_t bits_per_item,
               template<size_t> class TableType>
     Status
-    CuckooFilter<KeyType, bits_per_key, TableType>::AddImpl(
+    CuckooFilter<ItemType, bits_per_item, TableType>::AddImpl(
         const size_t i, const uint32_t tag) {
         DPRINTF(DEBUG_CUCKOO, "\nCuckooFilter::AddImpl(i, tag)\n");
         size_t curindex = i;
         uint32_t curtag = tag;
         uint32_t oldtag;
 
-        for (uint32_t count = 0; count < MAX_CUCKOO_COUNT; count ++) {
+        for (uint32_t count = 0; count < kMaxCuckooCount; count ++) {
             bool kickout = (count > 0);
             oldtag = 0;
             DPRINTF(DEBUG_CUCKOO, "CuckooFilter::Add i=%zu, tag=%s\n", curindex, PrintUtil::bytes_to_hex((char*) &tag, 4).c_str());
@@ -167,11 +174,11 @@ namespace cuckoofilter {
         return Ok;
     }
 
-    template <typename KeyType,
-              size_t bits_per_key,
+    template <typename ItemType,
+              size_t bits_per_item,
               template<size_t> class TableType>
     Status
-    CuckooFilter<KeyType, bits_per_key, TableType>::Contain(const KeyType& key) const {
+    CuckooFilter<ItemType, bits_per_item, TableType>::Contain(const ItemType& key) const {
         bool found = false;
         size_t i1, i2;
         uint32_t tag;
@@ -193,11 +200,11 @@ namespace cuckoofilter {
         }
     }
 
-    template <typename KeyType,
-              size_t bits_per_key,
+    template <typename ItemType,
+              size_t bits_per_item,
               template<size_t> class TableType>
     Status
-    CuckooFilter<KeyType, bits_per_key, TableType>::Delete(const KeyType& key) {
+    CuckooFilter<ItemType, bits_per_item, TableType>::Delete(const ItemType& key) {
         size_t i1, i2;
         uint32_t tag;
 
@@ -231,11 +238,10 @@ namespace cuckoofilter {
         return Ok;
     }
 
-    //template <typename KeyType>
-    template <typename KeyType,
-              size_t bits_per_key,
+    template <typename ItemType,
+              size_t bits_per_item,
               template<size_t> class TableType>
-    string CuckooFilter<KeyType, bits_per_key, TableType>::Info() const {
+    string CuckooFilter<ItemType, bits_per_item, TableType>::Info() const {
         stringstream ss;
         ss << "CuckooFilter Status:\n";
 #ifdef QUICK_N_DIRTY_HASHING

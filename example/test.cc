@@ -9,11 +9,16 @@
 using namespace cuckoofilter;
 
 int main(int argc, char** argv) {
-    const size_t bits_per_item = 12;
-    const size_t total_items  = 1000000;
+    size_t total_items  = 1000000;
 
-    // Create a simple cuckoo filter
-    CuckooFilter<size_t, bits_per_item> filter(total_items);
+    // Create a simple cuckoo filter, accepting keys of size_t and
+    // making 12 bits for each key:
+    //    CuckooFilter<size_t, 12> filter(total_items);
+    // To use semi-sorting, define the cuckoo filter using
+    // PackedTable, accepting keys of size_t type and making 13 bits
+    // for each key:
+    //   CuckooFilter<size_t, 13, PackedTable> filter(total_items);
+    CuckooFilter<size_t, 12> filter(total_items);
 
     // Insert items into this cuckoo filter
     size_t num_inserted = 0;
