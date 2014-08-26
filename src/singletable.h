@@ -142,9 +142,9 @@ namespace cuckoofilter {
             return;
         }
 
-        inline bool  FindTagInBuckets(const size_t i1,
-                                      const size_t i2,
-                                      const uint32_t tag) const {
+        inline bool FindTagInBuckets(const size_t i1,
+                                     const size_t i2,
+                                     const uint32_t tag) const {
             const char* p1 = buckets_[i1].bits_;
             const char* p2 = buckets_[i2].bits_;
 
