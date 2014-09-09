@@ -13,23 +13,23 @@ Interface
 --------
 A cuckoo filter supports following operations:
 
-*  Add(key): insert key to the filter
-*  Contain(key): return if key is already inserted, it may return false positive results like Bloom filters
-*  Delete(key): delete the given key from the filter
-*  Size(): return the total number of keys existing in the filter
-*  SizeInBytes(): return the filter size in bytes
+*  ``Add(item)``: insert an item to the filter
+*  ``Contain(item)``: return if item is already in the filter. Note that this method may return false positive results like Bloom filters
+*  ``Delete(item)``: delete the given item from the filter. Note that to use this method, it must be ensured that this item is in the filter (e.g., based on records on external storage); otherwise, a false item may be deleted.
+*  ``Size()``: return the total number of items currently in the filter
+*  ``SizeInBytes()``: return the filter size in bytes
 
 Repository structure
 --------------------
-    /src/               
+*  ``src/``: the C++ implementation of cuckoo filter
+*  ``example/test.cc``: an example of using cuckoo filter
 
-the C++ implementation of cuckoo filter
+Usage
+-------
+To build this example:
 
-    /example/test.cc    
+    $ make test
 
-an example of using cuckoo filter. To build this example, simply type
-
-    $ make
 
 Authors
 -------
