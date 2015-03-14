@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     // To enable semi-sorting, define the storage of cuckoo filter to be
     // PackedTable, accepting keys of size_t type and making 13 bits
     // for each key:
-    //   CuckooFilter<size_t, 13, PackedTable> filter(total_items);
+    //   CuckooFilter<size_t, 13, cuckoofilter::PackedTable> filter(total_items);
     CuckooFilter<size_t, 12> filter(total_items);
 
     // Insert items to this cuckoo filter
