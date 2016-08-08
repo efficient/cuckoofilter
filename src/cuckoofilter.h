@@ -245,7 +245,7 @@ namespace cuckoofilter {
 #endif
            << "\t\t" << table_->Info() << "\n"
            << "\t\tKeys stored: " << Size() << "\n"
-           << "\t\tLoad facotr: " << LoadFactor() << "\n"
+           << "\t\tLoad factor: " << LoadFactor() << "\n"
            << "\t\tHashtable size: " << (table_->SizeInBytes() >> 10)
            << " KB\n";
         if (Size() > 0) {
