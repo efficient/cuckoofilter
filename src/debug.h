@@ -16,15 +16,15 @@
  * a combination of DEBUG_ERRS, DEBUG_CUCKOO, DEBUG_TABLE, DEBUG_ENCODE
  */
 
-#define DPRINTF(level, fmt, args...) \
-    do { if (debug_level & (level)) fprintf(stdout, fmt , ##args ); } while(0)
+#define DPRINTF(level, ...) \
+    do { if (debug_level & (level)) fprintf(stdout, ##__VA_ARGS__ ); } while(0)
 #define DEBUG_PERROR(errmsg) \
     do { if (debug_level & DEBUG_ERRS) perror(errmsg); } while(0)
 
 #else
 
-#define DPRINTF(level, fmt, args...)
-#define DEBUG_PERROR(level, fmt, args...)
+#define DPRINTF(level, ...)
+#define DEBUG_PERROR(level, ...)
 
 #endif
 
