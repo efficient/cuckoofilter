@@ -23,8 +23,8 @@
 
 #else
 
-#define DPRINTF(args...)
-#define DEBUG_PERROR(args...)
+#define DPRINTF(level, fmt, args...)
+#define DEBUG_PERROR(level, fmt, args...)
 
 #endif
 
