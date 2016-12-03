@@ -23,6 +23,7 @@ Repository structure
 --------------------
 *  ``src/``: the C++ implementation of cuckoo filter
 *  ``example/test.cc``: an example of using cuckoo filter
+*  ``benchmarks``: Some benchmarks of speed, space used, and false positive rate
 
 Usage
 -------
@@ -30,6 +31,9 @@ To build this example:
 
     $ make test
 
+To build the benchmarks:
+
+    $ (cd benchmarks/ && make)
 
 Authors
 -------

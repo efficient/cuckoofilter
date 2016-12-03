@@ -4,7 +4,7 @@ CC = g++
 #OPT = -O3 -DNDEBUG
 OPT = -g -ggdb
 
-CFLAGS += -Wall -c -I. -I./include -I/usr/include/ -I./src/ $(OPT)
+CFLAGS += -fno-strict-aliasing -Wall -c -I. -I./include -I/usr/include/ -I./src/ $(OPT)
 
 LDFLAGS+= -Wall -lpthread -lssl -lcrypto
 
