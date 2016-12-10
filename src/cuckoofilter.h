@@ -48,7 +48,9 @@ namespace cuckoofilter {
         VictimCache victim_;
 
         inline size_t IndexHash(uint32_t hv) const {
-            return hv % table_->num_buckets;
+          // table_->num_buckets is always a power of two, so modulo can be replaced with
+          // bitwise-and:
+          return hv & (table_->num_buckets - 1);
         }
 
         inline uint32_t TagHash(uint32_t hv) const {
@@ -61,13 +63,9 @@ namespace cuckoofilter {
         inline void GenerateIndexTagHash(const ItemType &item,
                                          size_t* index,
                                          uint32_t* tag) const {
-
-            std::string hashed_key = HashUtil::SHA1Hash((const char*) &item,
-                                                   sizeof(item));
-            uint64_t hv = *((uint64_t*) hashed_key.c_str());
-
-            *index = IndexHash((uint32_t) (hv >> 32));
-            *tag   = TagHash((uint32_t) (hv & 0xFFFFFFFF));
+            const uint64_t hash = HashUtil::TwoIndependentMultiplyShift(item);
+            *index = IndexHash(hash >> 32);
+            *tag = TagHash(hash);
         }
 
         inline size_t AltIndex(const size_t index, const uint32_t tag) const {

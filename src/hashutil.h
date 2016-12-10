@@ -39,6 +39,18 @@ namespace cuckoofilter {
         static std::string MD5Hash(const char* inbuf, size_t in_length);
         static std::string SHA1Hash(const char* inbuf, size_t in_length);
 
+        // See Martin Dietzfelbinger, "Universal hashing and k-wise independent random
+        // variables via integer arithmetic without primes".
+        static uint64_t TwoIndependentMultiplyShift(uint64_t key) {
+          constexpr uint64_t SEED[4] = {
+              0x818c3f78ull, 0x672f4a3aull, 0xabd04d69ull, 0x12b51f95ull};
+          const unsigned __int128 m =
+              *reinterpret_cast<const unsigned __int128 *>(&SEED[0]);
+          const unsigned __int128 a =
+              *reinterpret_cast<const unsigned __int128 *>(&SEED[2]);
+          return (a + m * key) >> 64;
+        }
+
     private:
         HashUtil();
     };
