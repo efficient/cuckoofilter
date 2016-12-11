@@ -12,7 +12,7 @@ SRC = ../src/hashutil.cc
 
 .PHONY: all
 
-all: conext-table3.exe conext-figure5.exe
+all: conext-table3.exe conext-figure5.exe bulk-insert-and-query.exe
 
 %.exe: %.cc ${HEADERS} ${SRC} Makefile
 	$(CXX) $(CXXFLAGS) $< -o $@ $(SRC) $(LDFLAGS)
