@@ -9,26 +9,33 @@
 //
 // Example output:
 //
-// $ for NUM in 1234 12345 123456 1234567; do echo $NUM:; ./bulk-insert-and-query.exe $NUM; echo; done
-// 1234:
+// $ for NUM in $(seq 15 17); do echo $NUM:; ./bulk-insert-and-query.exe ${NUM}000000; echo; done
+// 15:
 //              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item
-//     Cuckoo               58.91    189.60    189.68    189.92    189.38    189.27              0.114%               19.92
-//   SemiSort               37.92     87.60     80.13     73.21     66.40     61.88              0.059%               19.96
+//   Cuckoo12               11.96     31.66     32.42     32.43     32.81     32.18              0.177%               13.42
+// SemiSort13                7.10     13.04     12.88     12.86     12.80     12.80              0.090%               13.42
+//    Cuckoo8               15.60     33.69     30.70     33.94     33.56     35.80              2.780%                8.95
+//  SemiSort9                7.90     14.24     14.78     14.96     14.95     14.58              1.426%                8.95
+//   Cuckoo16               13.16     33.02     33.19     32.56     32.93     31.84              0.012%               17.90
+// SemiSort17                6.90     12.75     12.38     12.41     12.41     12.33              0.007%               17.90
 //
-// 12345:
+// 16:
 //              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item
-//     Cuckoo               47.62    188.88    188.80    188.64    182.71    189.28              0.147%               15.93
-//   SemiSort               26.29     85.85     77.18     70.02     52.29     59.10              0.071%               15.93
+//   Cuckoo12                7.22     32.00     32.27     32.04     32.56     32.21              0.188%               12.58
+// SemiSort13                4.85     12.66     12.81     12.53     12.68     12.58              0.093%               12.58
+//    Cuckoo8                9.14     30.92     35.00     33.91     35.13     34.08              2.938%                8.39
+//  SemiSort9                5.44     15.13     12.66     14.49     14.50     14.25              1.496%                8.39
+//   Cuckoo16                7.52     32.19     33.27     32.14     32.33     32.18              0.013%               16.78
+// SemiSort17                4.67     12.10     12.04     12.27     12.00     12.19              0.006%               16.78
 //
-// 123456:
+// 17:
 //              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item
-//     Cuckoo               31.24    170.39    165.96    170.83    170.79    170.78              0.182%               12.74
-//   SemiSort               19.37     73.69     67.60     60.93     55.67     51.47              0.091%               12.74
-//
-// 1234567:
-//              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item
-//     Cuckoo               42.52    106.25     97.39    107.50    107.43     99.92              0.115%               20.38
-//   SemiSort               25.74     42.34     40.56     37.54     37.04     34.59              0.060%               20.38
+//   Cuckoo12               20.75     29.18     29.44     29.84     29.49     29.81              0.102%               23.69
+// SemiSort13                8.81     11.13     10.69     11.06     11.05     11.38              0.052%               23.69
+//    Cuckoo8               28.90     32.11     32.04     31.80     31.80     31.99              1.584%               15.79
+//  SemiSort9                9.45     12.24     12.16     12.09     12.06     11.26              1.050%               15.79
+//   Cuckoo16               26.87     30.78     30.85     30.77     30.80     30.89              0.006%               31.58
+// SemiSort17                8.68     10.97     10.96     10.96     10.93     10.94              0.002%               31.58
 
 #include <climits>
 #include <iomanip>
@@ -147,15 +154,39 @@ int main(int argc, char * argv[]) {
 
   cout << StatisticsTableHeader(10, 5) << endl;
 
-  const auto cf = CuckooBenchmark<
+  auto cf = CuckooBenchmark<
       CuckooFilter<uint64_t, 12 /* bits per item */, SingleTable /* not semi-sorted*/>>(
       add_count, to_add, to_lookup);
 
-  cout << setw(10) << "Cuckoo" << cf << endl;
+  cout << setw(10) << "Cuckoo12" << cf << endl;
 
-  const auto sscf = CuckooBenchmark<
+  cf = CuckooBenchmark<
       CuckooFilter<uint64_t, 13 /* bits per item */, PackedTable /* semi-sorted*/>>(
       add_count, to_add, to_lookup);
 
-  cout << setw(10) << "SemiSort" << sscf << endl;
+  cout << setw(10) << "SemiSort13" << cf << endl;
+
+  cf = CuckooBenchmark<
+      CuckooFilter<uint64_t, 8 /* bits per item */, SingleTable /* not semi-sorted*/>>(
+      add_count, to_add, to_lookup);
+
+  cout << setw(10) << "Cuckoo8" << cf << endl;
+
+  cf = CuckooBenchmark<
+      CuckooFilter<uint64_t, 9 /* bits per item */, PackedTable /* semi-sorted*/>>(
+      add_count, to_add, to_lookup);
+
+  cout << setw(10) << "SemiSort9" << cf << endl;
+
+  cf = CuckooBenchmark<
+      CuckooFilter<uint64_t, 16 /* bits per item */, SingleTable /* not semi-sorted*/>>(
+      add_count, to_add, to_lookup);
+
+  cout << setw(10) << "Cuckoo16" << cf << endl;
+
+  cf = CuckooBenchmark<
+      CuckooFilter<uint64_t, 17 /* bits per item */, PackedTable /* semi-sorted*/>>(
+      add_count, to_add, to_lookup);
+
+  cout << setw(10) << "SemiSort17" << cf << endl;
 }
