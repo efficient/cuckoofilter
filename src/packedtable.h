@@ -86,18 +86,18 @@ namespace cuckoofilter {
             DPRINTF(DEBUG_TABLE, "PackedTable::PrintTags done\n");
         }
 
-        void comparator(uint32_t& a, uint32_t& b) {
+        inline void SortPair(uint32_t& a, uint32_t& b) {
             if ((a & 0x0f) > (b & 0x0f)) {
                 uint32_t tmp = a; a = b; b = tmp;
             }
         }
 
         inline void SortTags(uint32_t *tags) {
-            comparator(tags[0], tags[2]);
-            comparator(tags[1], tags[3]);
-            comparator(tags[0], tags[1]);
-            comparator(tags[2], tags[3]);
-            comparator(tags[1], tags[2]);
+            SortPair(tags[0], tags[2]);
+            SortPair(tags[1], tags[3]);
+            SortPair(tags[0], tags[1]);
+            SortPair(tags[2], tags[3]);
+            SortPair(tags[1], tags[2]);
         }
 
         /* read and decode the bucket i, pass the 4 decoded tags to the 2nd arg
