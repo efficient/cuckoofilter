@@ -7,6 +7,7 @@
 #include "printutil.h"
 
 #include <sstream>
+#include <utility>
 
 namespace cuckoofilter {
 
@@ -88,7 +89,7 @@ namespace cuckoofilter {
 
         inline void SortPair(uint32_t& a, uint32_t& b) {
             if ((a & 0x0f) > (b & 0x0f)) {
-                uint32_t tmp = a; a = b; b = tmp;
+                std::swap(a, b);
             }
         }
 
@@ -349,10 +350,10 @@ namespace cuckoofilter {
             tags2[1] |= ((v>>8) & 0x000f);
             tags2[3] |= ((v>>12) & 0x000f);
 
-            bool ret1 = ((tags1[0] == tag) || (tags1[1] == tag) || (tags1[2] == tag) || (tags1[3] == tag));
-            bool ret2 = ((tags2[0] == tag) || (tags2[1] == tag) || (tags2[2] == tag) || (tags2[3] == tag));
-
-            return ret1 || ret2;
+            return (tags1[0] == tag) || (tags1[1] == tag) || 
+                   (tags1[2] == tag) || (tags1[3] == tag) ||
+                   (tags2[0] == tag) || (tags2[1] == tag) || 
+                   (tags2[2] == tag) || (tags2[3] == tag);
         }
 
         bool FindTagInBucket(const size_t i, const uint32_t tag) const {
