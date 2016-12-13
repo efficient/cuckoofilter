@@ -11,31 +11,31 @@
 //
 // $ for NUM in $(seq 15 17); do echo $NUM:; ./bulk-insert-and-query.exe ${NUM}000000; echo; done
 // 15:
-//              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item
-//   Cuckoo12               11.96     31.66     32.42     32.43     32.81     32.18              0.177%               13.42
-// SemiSort13                7.10     13.04     12.88     12.86     12.80     12.80              0.090%               13.42
-//    Cuckoo8               15.60     33.69     30.70     33.94     33.56     35.80              2.780%                8.95
-//  SemiSort9                7.90     14.24     14.78     14.96     14.95     14.58              1.426%                8.95
-//   Cuckoo16               13.16     33.02     33.19     32.56     32.93     31.84              0.012%               17.90
-// SemiSort17                6.90     12.75     12.38     12.41     12.41     12.33              0.007%               17.90
+//              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item     optimum for fpp      wasted space %
+//   Cuckoo12               11.98     24.87     22.59     32.70     32.64     32.49              0.165%               13.42                9.24              45.21%
+// SemiSort13                7.10     13.07     12.69     12.77     12.42     12.66              0.086%               13.42               10.18              31.82%
+//    Cuckoo8               15.63     35.26     34.29     35.33     35.38     35.33              2.774%                8.95                5.17              73.02%
+//  SemiSort9                7.97     14.33     15.01     14.93     14.64     14.74              1.424%                8.95                6.13              45.87%
+//   Cuckoo16               13.20     33.08     33.05     33.08     32.98     33.02              0.012%               17.90               13.07              36.88%
+// SemiSort17                6.90     11.84     12.50     12.48     11.51     12.30              0.005%               17.90               14.35              24.74%
 //
 // 16:
-//              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item
-//   Cuckoo12                7.22     32.00     32.27     32.04     32.56     32.21              0.188%               12.58
-// SemiSort13                4.85     12.66     12.81     12.53     12.68     12.58              0.093%               12.58
-//    Cuckoo8                9.14     30.92     35.00     33.91     35.13     34.08              2.938%                8.39
-//  SemiSort9                5.44     15.13     12.66     14.49     14.50     14.25              1.496%                8.39
-//   Cuckoo16                7.52     32.19     33.27     32.14     32.33     32.18              0.013%               16.78
-// SemiSort17                4.67     12.10     12.04     12.27     12.00     12.19              0.006%               16.78
+//              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item     optimum for fpp      wasted space %
+//   Cuckoo12                7.45     32.58     32.38     32.83     32.81     32.86              0.186%               12.58                9.07              38.68%
+// SemiSort13                5.00     13.18     11.69     12.94     12.87     12.82              0.092%               12.58               10.08              24.81%
+//    Cuckoo8                9.36     25.26     35.61     35.43     35.59     34.57              2.951%                8.39                5.08              65.05%
+//  SemiSort9                5.68     14.89     15.16     15.18     14.66     14.64              1.508%                8.39                6.05              38.63%
+//   Cuckoo16                7.54     33.11     33.10     33.13     33.12     32.58              0.010%               16.78               13.32              25.98%
+// SemiSort17                4.77     12.52     12.60     12.55     12.46     11.55              0.005%               16.78               14.44              16.19%
 //
 // 17:
-//              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item
-//   Cuckoo12               20.75     29.18     29.44     29.84     29.49     29.81              0.102%               23.69
-// SemiSort13                8.81     11.13     10.69     11.06     11.05     11.38              0.052%               23.69
-//    Cuckoo8               28.90     32.11     32.04     31.80     31.80     31.99              1.584%               15.79
-//  SemiSort9                9.45     12.24     12.16     12.09     12.06     11.26              1.050%               15.79
-//   Cuckoo16               26.87     30.78     30.85     30.77     30.80     30.89              0.006%               31.58
-// SemiSort17                8.68     10.97     10.96     10.96     10.93     10.94              0.002%               31.58
+//              adds per sec. (M)        0%       25%       50%       75%      100%    false pos. prob.       bits per item     optimum for fpp      wasted space %
+//   Cuckoo12               20.91     29.64     27.40     29.78     29.78     29.82              0.098%               23.69               10.00             136.91%
+// SemiSort13                8.87     11.27     11.15     11.07     11.07     11.18              0.049%               23.69               10.99             115.42%
+//    Cuckoo8               28.56     31.87     31.80     31.91     31.08     31.81              1.569%               15.79                5.99             163.43%
+//  SemiSort9                9.45     11.48     12.30     12.26     11.80     10.72              1.043%               15.79                6.58             139.85%
+//   Cuckoo16               26.84     30.74     30.64     30.42     29.16     30.68              0.007%               31.58               13.89             127.41%
+// SemiSort17                8.57     11.12     11.05     11.01     11.05     10.57              0.004%               31.58               14.68             115.07%
 
 #include <climits>
 #include <iomanip>
@@ -76,7 +76,8 @@ string StatisticsTableHeader(int type_width, int find_percent_count) {
     os << setw(9)
        << static_cast<int>(100 * i / static_cast<double>(find_percent_count - 1)) << '%';
   }
-  os << setw(20) << "false pos. prob." << setw(20) << "bits per item";
+  os << setw(20) << "false pos. prob." << setw(20) << "bits per item" << setw(20)
+     << "optimum for fpp" << setw(20) << "wasted space %";
   return os.str();
 }
 
@@ -90,8 +91,11 @@ basic_ostream<CharT, Traits>& operator<<(
   for (const auto& fps : stats.finds_per_nano) {
     os << setw(10) << fps.second * NANOS_PER_MILLION;
   }
+  const auto minbits = log2(1 / stats.false_positive_probabilty);
   os << setw(19) << setprecision(3) << stats.false_positive_probabilty * 100 << '%'
-     << setw(20) << setprecision(2) << stats.bits_per_item;
+     << setw(20) << setprecision(2) << stats.bits_per_item << setw(20) << minbits
+     << setw(19) << 100 * (stats.bits_per_item / minbits - 1) << '%';
+
   return os;
 }
 
