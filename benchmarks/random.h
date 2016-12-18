@@ -30,7 +30,7 @@
 template <typename T>
 ::std::vector<T> MixIn(const T* x_begin, const T* x_end, const T* y_begin, const T* y_end,
     double y_probability) {
-  const auto x_size = x_end - x_begin, y_size = y_end - y_begin;
+  const size_t x_size = x_end - x_begin, y_size = y_end - y_begin;
   if (y_size > (1ull << 32)) throw ::std::length_error("y is too long");
   ::std::vector<T> result(x_begin, x_end);
   ::std::random_device random;

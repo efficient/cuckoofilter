@@ -29,7 +29,8 @@ const size_t kMaxCuckooCount = 500;
 //   TableType: the storage of table, SingleTable by default, and
 // PackedTable to enable semi-sorting
 template <typename ItemType, size_t bits_per_item,
-          template <size_t> class TableType = SingleTable>
+          template <size_t> class TableType = SingleTable,
+          typename HashFamily = TwoIndependentMultiplyShift>
 class CuckooFilter {
   // Storage of items
   TableType<bits_per_item> *table_;
@@ -45,6 +46,8 @@ class CuckooFilter {
 
   VictimCache victim_;
 
+  HashFamily hasher_;
+
   inline size_t IndexHash(uint32_t hv) const {
     // table_->num_buckets is always a power of two, so modulo can be replaced
     // with
@@ -59,9 +62,9 @@ class CuckooFilter {
     return tag;
   }
 
-  inline void GenerateIndexTagHash(const ItemType &item, size_t *index,
-                                   uint32_t *tag) const {
-    const uint64_t hash = HashUtil::TwoIndependentMultiplyShift(item);
+  inline void GenerateIndexTagHash(const ItemType& item, size_t* index,
+                                   uint32_t* tag) const {
+    const uint64_t hash = hasher_(item);
     *index = IndexHash(hash >> 32);
     *tag = TagHash(hash);
   }
@@ -82,7 +85,7 @@ class CuckooFilter {
   double BitsPerItem() const { return 8.0 * table_->SizeInBytes() / Size(); }
 
  public:
-  explicit CuckooFilter(const size_t max_num_keys) : num_items_(0), victim_() {
+  explicit CuckooFilter(const size_t max_num_keys) : num_items_(0), victim_(), hasher_() {
     size_t assoc = 4;
     size_t num_buckets = upperpower2(max_num_keys / assoc);
     double frac = (double)max_num_keys / num_buckets / assoc;
@@ -116,8 +119,8 @@ class CuckooFilter {
 };
 
 template <typename ItemType, size_t bits_per_item,
-          template <size_t> class TableType>
-Status CuckooFilter<ItemType, bits_per_item, TableType>::Add(
+          template <size_t> class TableType, typename HashFamily>
+Status CuckooFilter<ItemType, bits_per_item, TableType, HashFamily>::Add(
     const ItemType &item) {
   size_t i;
   uint32_t tag;
@@ -131,8 +134,8 @@ Status CuckooFilter<ItemType, bits_per_item, TableType>::Add(
 }
 
 template <typename ItemType, size_t bits_per_item,
-          template <size_t> class TableType>
-Status CuckooFilter<ItemType, bits_per_item, TableType>::AddImpl(
+          template <size_t> class TableType, typename HashFamily>
+Status CuckooFilter<ItemType, bits_per_item, TableType, HashFamily>::AddImpl(
     const size_t i, const uint32_t tag) {
   size_t curindex = i;
   uint32_t curtag = tag;
@@ -158,8 +161,8 @@ Status CuckooFilter<ItemType, bits_per_item, TableType>::AddImpl(
 }
 
 template <typename ItemType, size_t bits_per_item,
-          template <size_t> class TableType>
-Status CuckooFilter<ItemType, bits_per_item, TableType>::Contain(
+          template <size_t> class TableType, typename HashFamily>
+Status CuckooFilter<ItemType, bits_per_item, TableType, HashFamily>::Contain(
     const ItemType &key) const {
   bool found = false;
   size_t i1, i2;
@@ -181,8 +184,8 @@ Status CuckooFilter<ItemType, bits_per_item, TableType>::Contain(
 }
 
 template <typename ItemType, size_t bits_per_item,
-          template <size_t> class TableType>
-Status CuckooFilter<ItemType, bits_per_item, TableType>::Delete(
+          template <size_t> class TableType, typename HashFamily>
+Status CuckooFilter<ItemType, bits_per_item, TableType, HashFamily>::Delete(
     const ItemType &key) {
   size_t i1, i2;
   uint32_t tag;
@@ -215,15 +218,10 @@ TryEliminateVictim:
 }
 
 template <typename ItemType, size_t bits_per_item,
-          template <size_t> class TableType>
-std::string CuckooFilter<ItemType, bits_per_item, TableType>::Info() const {
+          template <size_t> class TableType, typename HashFamily>
+std::string CuckooFilter<ItemType, bits_per_item, TableType, HashFamily>::Info() const {
   std::stringstream ss;
   ss << "CuckooFilter Status:\n"
-#ifdef QUICK_N_DIRTY_HASHING
-     << "\t\tQuick hashing used\n"
-#else
-     << "\t\tBob hashing used\n"
-#endif
      << "\t\t" << table_->Info() << "\n"
      << "\t\tKeys stored: " << Size() << "\n"
      << "\t\tLoad factor: " << LoadFactor() << "\n"
