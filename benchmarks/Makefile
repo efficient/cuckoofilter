@@ -2,7 +2,7 @@
 OPT = -O3 -DNDEBUG
 #OPT = -g -ggdb
 
-CXXFLAGS += -fno-strict-aliasing -Wall -std=c++11 -I. -I../src/ $(OPT)
+CXXFLAGS += -fno-strict-aliasing -Wall -std=c++11 -I. -I../src/ $(OPT) -march=native
 
 LDFLAGS+= -Wall -lpthread -lssl -lcrypto
 
