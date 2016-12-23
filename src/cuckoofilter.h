@@ -88,7 +88,7 @@ namespace cuckoofilter {
         }
 
     public:
-        explicit CuckooFilter(const size_t max_num_keys): num_items_(0) {
+        explicit CuckooFilter(const size_t max_num_keys): num_items_(0), victim_() {
             size_t assoc = 4;
             size_t num_buckets = upperpower2(max_num_keys / assoc);
             double frac = (double) max_num_keys / num_buckets / assoc;
