@@ -49,7 +49,7 @@ class CuckooFilter {
     // table_->num_buckets is always a power of two, so modulo can be replaced
     // with
     // bitwise-and:
-    return hv & (table_->num_buckets - 1);
+    return hv & (table_->NumBuckets() - 1);
   }
 
   inline uint32_t TagHash(uint32_t hv) const {
@@ -236,5 +236,4 @@ std::string CuckooFilter<ItemType, bits_per_item, TableType>::Info() const {
   return ss.str();
 }
 }  // namespace cuckoofilter
-
 #endif  // CUCKOO_FILTER_CUCKOO_FILTER_H_
