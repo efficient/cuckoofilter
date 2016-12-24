@@ -13,38 +13,41 @@
 // 55:
 //                   Million    Find    Find    Find    Find    Find                       optimal  wasted
 //                  adds/sec      0%     25%     50%     75%    100%       ε  bits/item  bits/item   space
-//      Cuckoo12       23.78   37.24   35.04   37.17   37.35   36.35  0.131%      18.30       9.58   91.1%
-//    SemiSort13       11.63   17.55   17.08   17.14   17.54   22.32  0.064%      18.30      10.62   72.4%
-//       Cuckoo8       35.31   49.32   50.24   49.98   48.32   50.49  2.044%      12.20       5.61  117.4%
-//     SemiSort9       13.99   22.23   22.78   22.13   23.16   24.06  1.207%      12.20       6.37   91.5%
-//      Cuckoo16       27.06   36.94   37.12   35.31   36.81   35.10  0.009%      24.40      13.46   81.4%
-//    SemiSort17       10.37   15.70   15.84   15.78   15.55   15.93  0.004%      24.40      14.72   65.8%
-//    SimdBlock8       74.22   72.34   74.23   74.34   74.69   74.32  0.508%      12.20       7.62   60.1%
-// time: 14.34 seconds
+//      Cuckoo12       27.15   30.20   40.99   41.18   40.83   41.61  0.128%      18.30       9.61   90.5%
+//    SemiSort13       11.21   18.29   18.15   18.26   18.46   17.55  0.065%      18.30      10.58   72.9%
+//     Shingle12       21.34   40.58   40.80   40.82   40.66   40.91  0.062%      18.30      10.66   71.8%
+//       Cuckoo8       42.06   45.61   54.74   53.58   55.83   54.35  2.071%      12.20       5.59  118.1%
+//     SemiSort9       15.18   24.40   25.77   14.41   25.57   26.05  1.214%      12.20       6.36   91.7%
+//      Cuckoo16       31.81   39.52   40.61   40.41   40.09   40.08  0.010%      24.40      13.30   83.5%
+//    SemiSort17       11.24   16.73   16.55   16.71   16.77   16.34  0.005%      24.40      14.44   69.0%
+//    SimdBlock8       81.48   84.58   86.63   86.63   83.58   87.26  0.485%      12.20       7.69   58.7%
+// time: 14.06 seconds
 //
 // 75:
 //                   Million    Find    Find    Find    Find    Find                       optimal  wasted
 //                  adds/sec      0%     25%     50%     75%    100%       ε  bits/item  bits/item   space
-//      Cuckoo12       15.61   37.24   37.23   37.34   37.15   37.36  0.173%      13.42       9.18   46.2%
-//    SemiSort13        8.77   17.11   15.70   17.34   17.73   18.86  0.087%      13.42      10.17   31.9%
-//       Cuckoo8       23.46   48.81   48.14   39.48   49.28   49.65  2.806%       8.95       5.16   73.6%
-//     SemiSort9       11.14   23.98   20.80   23.37   24.35   21.41  1.428%       8.95       6.13   46.0%
-//      Cuckoo16       15.08   36.64   36.75   36.83   36.59   36.74  0.011%      17.90      13.11   36.5%
-//    SemiSort17        8.02   15.63   15.66   15.87   15.67   15.88  0.006%      17.90      14.02   27.6%
-//    SimdBlock8       73.26   74.41   74.28   70.86   72.02   70.69  2.071%       8.95       5.59   60.0%
-// time: 18.06 seconds
+//      Cuckoo12       18.27   41.87   41.80   40.89   39.83   41.95  0.170%      13.42       9.20   45.9%
+//    SemiSort13        8.65   18.48   14.31   18.63   18.78   14.83  0.087%      13.42      10.17   31.9%
+//     Shingle12       11.00   40.80   41.14   41.34   41.30   41.41  0.088%      13.42      10.16   32.1%
+//       Cuckoo8       28.13   53.47   55.73   56.40   56.30   56.50  2.797%       8.95       5.16   73.4%
+//     SemiSort9       12.43   25.76   26.30   25.91   16.99   26.46  1.438%       8.95       6.12   46.2%
+//      Cuckoo16       17.71   40.93   41.09   41.19   41.31   40.84  0.012%      17.90      13.00   37.7%
+//    SemiSort17        8.46   16.99   17.06   15.84   13.75   17.06  0.006%      17.90      14.10   26.9%
+//    SimdBlock8       88.56   88.43   84.02   87.45   88.91   88.38  2.054%       8.95       5.61   59.6%
+// time: 16.27 seconds
 //
 // 85:
 //                   Million    Find    Find    Find    Find    Find                       optimal  wasted
 //                  adds/sec      0%     25%     50%     75%    100%       ε  bits/item  bits/item   space
-//      Cuckoo12       22.74   32.49   32.69   32.58   32.85   32.71  0.102%      23.69       9.94  138.3%
-//    SemiSort13        9.97   13.16   13.15   13.54   16.01   19.58  0.056%      23.69      10.80  119.4%
-//       Cuckoo8       30.67   36.86   36.79   37.09   36.97   36.87  1.581%      15.79       5.98  163.9%
-//     SemiSort9       10.96   15.49   15.37   15.40   15.18   15.63  1.047%      15.79       6.58  140.1%
-//      Cuckoo16       27.84   33.74   33.72   33.69   33.75   33.62  0.007%      31.58      13.80  128.8%
-//    SemiSort17        9.51   12.83   12.80   12.64   12.86   12.50  0.004%      31.58      14.65  115.6%
-//    SimdBlock8       54.84   58.37   59.73   59.13   60.11   60.12  0.144%      15.79       9.44   67.3%
-// time: 19.43 seconds
+//      Cuckoo12       25.80   37.66   37.97   38.01   37.94   37.87  0.098%      23.69       9.99  137.1%
+//    SemiSort13        9.60   14.38   14.51   14.34   12.69   14.56  0.048%      23.69      11.02  114.8%
+//     Shingle12       21.77   37.25   36.65   37.44   37.55   35.79  0.052%      23.69      10.91  117.1%
+//       Cuckoo8       36.73   40.92   40.99   41.51   40.96   41.39  1.574%      15.79       5.99  163.6%
+//     SemiSort9       11.39   16.76   16.57   16.68   16.25   16.82  1.049%      15.79       6.57  140.2%
+//      Cuckoo16       33.98   37.85   38.70   38.92   38.76   38.95  0.006%      31.58      13.98  125.9%
+//    SemiSort17       10.30   13.39   14.30   14.21   14.34   14.40  0.004%      31.58      14.61  116.2%
+//    SimdBlock8       66.62   72.34   72.50   71.38   72.43   72.09  0.141%      15.79       9.48   66.6%
+// time: 16.50 seconds
 //
 
 #include <climits>
@@ -54,7 +57,9 @@
 #include <vector>
 
 #include "cuckoofilter.h"
+#include "filter-api.h"
 #include "random.h"
+#include "shingle.h"
 #include "simd-block.h"
 #include "timing.h"
 
@@ -118,38 +123,6 @@ basic_ostream<CharT, Traits>& operator<<(
 
   return os;
 }
-
-template<typename Table>
-struct FilterAPI {};
-
-template <typename ItemType, size_t bits_per_item, template <size_t> class TableType>
-struct FilterAPI<CuckooFilter<ItemType, bits_per_item, TableType>> {
-  using Table = CuckooFilter<ItemType, bits_per_item, TableType>;
-  static Table ConstructFromAddCount(size_t add_count) { return Table(add_count); }
-  static void Add(uint64_t key, Table * table) {
-    if (0 != table->Add(key)) {
-      throw logic_error("The filter is too small to hold all of the elements");
-    }
-  }
-  static bool Contain(uint64_t key, const Table * table) {
-    return (0 == table->Contain(key));
-  }
-};
-
-template <>
-struct FilterAPI<SimdBlockFilter<>> {
-  using Table = SimdBlockFilter<>;
-  static Table ConstructFromAddCount(size_t add_count) {
-    Table ans(ceil(log2(add_count * 8.0 / CHAR_BIT)));
-    return ans;
-  }
-  static void Add(uint64_t key, Table* table) {
-    table->Add(key);
-  }
-  static bool Contain(uint64_t key, const Table * table) {
-    return table->Find(key);
-  }
-};
 
 template <typename Table>
 Statistics FilterBenchmark(
@@ -223,6 +196,10 @@ int main(int argc, char * argv[]) {
       add_count, to_add, to_lookup);
 
   cout << setw(NAME_WIDTH) << "SemiSort13" << cf << endl;
+
+  cf = FilterBenchmark<Shingle<>>(add_count, to_add, to_lookup);
+
+  cout << setw(NAME_WIDTH) << "Shingle12" << cf << endl;
 
   cf = FilterBenchmark<
       CuckooFilter<uint64_t, 8 /* bits per item */, SingleTable /* not semi-sorted*/>>(
