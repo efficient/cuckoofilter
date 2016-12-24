@@ -25,7 +25,7 @@
 // Assuming little endian
 #define HASH_LITTLE_ENDIAN 1
 
-#define get16bits(d) (*((const uint16_t *) (d)))
+#define get16bits(d) (*((const uint16_t *)(d)))
 
 namespace cuckoofilter {
 /*

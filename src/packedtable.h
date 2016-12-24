@@ -2,6 +2,7 @@
 #define CUCKOO_FILTER_PACKED_TABLE_H_
 
 #include <sstream>
+#include <utility>
 
 #include "debug.h"
 #include "permencoding.h"
@@ -92,20 +93,18 @@ class PackedTable {
     DPRINTF(DEBUG_TABLE, "PackedTable::PrintTags done\n");
   }
 
-  void comparator(uint32_t &a, uint32_t &b) {
+  inline void SortPair(uint32_t &a, uint32_t &b) {
     if ((a & 0x0f) > (b & 0x0f)) {
-      uint32_t tmp = a;
-      a = b;
-      b = tmp;
+      std::swap(a, b);
     }
   }
 
   inline void SortTags(uint32_t *tags) {
-    comparator(tags[0], tags[2]);
-    comparator(tags[1], tags[3]);
-    comparator(tags[0], tags[1]);
-    comparator(tags[2], tags[3]);
-    comparator(tags[1], tags[2]);
+    SortPair(tags[0], tags[2]);
+    SortPair(tags[1], tags[3]);
+    SortPair(tags[0], tags[1]);
+    SortPair(tags[2], tags[3]);
+    SortPair(tags[1], tags[2]);
   }
 
   /* read and decode the bucket i, pass the 4 decoded tags to the 2nd arg
@@ -341,12 +340,9 @@ class PackedTable {
     tags2[1] |= ((v >> 8) & 0x000f);
     tags2[3] |= ((v >> 12) & 0x000f);
 
-    bool ret1 = ((tags1[0] == tag) || (tags1[1] == tag) || (tags1[2] == tag) ||
-                 (tags1[3] == tag));
-    bool ret2 = ((tags2[0] == tag) || (tags2[1] == tag) || (tags2[2] == tag) ||
-                 (tags2[3] == tag));
-
-    return ret1 || ret2;
+    return (tags1[0] == tag) || (tags1[1] == tag) || (tags1[2] == tag) ||
+           (tags1[3] == tag) || (tags2[0] == tag) || (tags2[1] == tag) ||
+           (tags2[2] == tag) || (tags2[3] == tag);
   }
 
   bool FindTagInBucket(const size_t i, const uint32_t tag) const {

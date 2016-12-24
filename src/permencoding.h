@@ -28,8 +28,8 @@ class PermEncoding {
 
   /* pack four 4-bit numbers to one 2-byte number */
   inline uint16_t pack(const uint8_t in[4]) const {
-    uint16_t in1 = *((uint16_t*)(in)) & 0x0f0f;
-    uint16_t in2 = *((uint16_t*)(in + 2)) << 4;
+    uint16_t in1 = *((uint16_t *)(in)) & 0x0f0f;
+    uint16_t in2 = *((uint16_t *)(in + 2)) << 4;
     return in1 | in2;
   }
 
@@ -66,7 +66,7 @@ class PermEncoding {
     return enc_table[pack(lowbits)];
   }
 
-  void gen_tables(int base, int k, uint8_t dst[4], uint16_t& idx) {
+  void gen_tables(int base, int k, uint8_t dst[4], uint16_t &idx) {
     for (int i = base; i < 16; i++) {
       /* for fast comparison in binary_search in little-endian machine */
       dst[k] = i;

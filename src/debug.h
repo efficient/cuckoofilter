@@ -1,7 +1,7 @@
 #ifndef CUCKOO_FILTER_DEBUG_H_
 #define CUCKOO_FILTER_DEBUG_H_
 
-#include <stdio.h> /* for perror */
+#include <stdio.h>  // for perror
 
 namespace cuckoofilter {
 

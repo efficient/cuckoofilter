@@ -1,7 +1,7 @@
 #ifndef CUCKOO_FILTER_CUCKOO_FILTER_H_
 #define CUCKOO_FILTER_CUCKOO_FILTER_H_
 
-#include <cassert>
+#include <assert.h>
 
 #include "debug.h"
 #include "hashutil.h"
@@ -32,7 +32,7 @@ template <typename ItemType, size_t bits_per_item,
           template <size_t> class TableType = SingleTable>
 class CuckooFilter {
   // Storage of items
-  TableType<bits_per_item>* table_;
+  TableType<bits_per_item> *table_;
 
   // Number of items stored
   size_t num_items_;
@@ -59,8 +59,8 @@ class CuckooFilter {
     return tag;
   }
 
-  inline void GenerateIndexTagHash(const ItemType& item, size_t* index,
-                                   uint32_t* tag) const {
+  inline void GenerateIndexTagHash(const ItemType &item, size_t *index,
+                                   uint32_t *tag) const {
     const uint64_t hash = HashUtil::TwoIndependentMultiplyShift(item);
     *index = IndexHash(hash >> 32);
     *tag = TagHash(hash);
@@ -82,7 +82,7 @@ class CuckooFilter {
   double BitsPerItem() const { return 8.0 * table_->SizeInBytes() / Size(); }
 
  public:
-  explicit CuckooFilter(const size_t max_num_keys) : num_items_(0) {
+  explicit CuckooFilter(const size_t max_num_keys) : num_items_(0), victim_() {
     size_t assoc = 4;
     size_t num_buckets = upperpower2(max_num_keys / assoc);
     double frac = (double)max_num_keys / num_buckets / assoc;
@@ -96,13 +96,13 @@ class CuckooFilter {
   ~CuckooFilter() { delete table_; }
 
   // Add an item to the filter.
-  Status Add(const ItemType& item);
+  Status Add(const ItemType &item);
 
   // Report if the item is inserted, with false positive rate.
-  Status Contain(const ItemType& item) const;
+  Status Contain(const ItemType &item) const;
 
   // Delete an key from the filter
-  Status Delete(const ItemType& item);
+  Status Delete(const ItemType &item);
 
   /* methods for providing stats  */
   // summary infomation
@@ -118,7 +118,7 @@ class CuckooFilter {
 template <typename ItemType, size_t bits_per_item,
           template <size_t> class TableType>
 Status CuckooFilter<ItemType, bits_per_item, TableType>::Add(
-    const ItemType& item) {
+    const ItemType &item) {
   size_t i;
   uint32_t tag;
 
@@ -160,7 +160,7 @@ Status CuckooFilter<ItemType, bits_per_item, TableType>::AddImpl(
 template <typename ItemType, size_t bits_per_item,
           template <size_t> class TableType>
 Status CuckooFilter<ItemType, bits_per_item, TableType>::Contain(
-    const ItemType& key) const {
+    const ItemType &key) const {
   bool found = false;
   size_t i1, i2;
   uint32_t tag;
@@ -183,7 +183,7 @@ Status CuckooFilter<ItemType, bits_per_item, TableType>::Contain(
 template <typename ItemType, size_t bits_per_item,
           template <size_t> class TableType>
 Status CuckooFilter<ItemType, bits_per_item, TableType>::Delete(
-    const ItemType& key) {
+    const ItemType &key) {
   size_t i1, i2;
   uint32_t tag;
 

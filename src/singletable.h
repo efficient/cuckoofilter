@@ -25,7 +25,7 @@ class SingleTable {
   } __attribute__((__packed__));
 
   // using a pointer adds one more indirection
-  Bucket* buckets_;
+  Bucket *buckets_;
 
  public:
   static const uint32_t TAGMASK = (1ULL << bits_per_tag) - 1;
@@ -56,60 +56,60 @@ class SingleTable {
 
   // read tag from pos(i,j)
   inline uint32_t ReadTag(const size_t i, const size_t j) const {
-    const char* p = buckets_[i].bits_;
+    const char *p = buckets_[i].bits_;
     uint32_t tag;
     /* following code only works for little-endian */
     if (bits_per_tag == 2) {
-      tag = *((uint8_t*)p) >> (j * 2);
+      tag = *((uint8_t *)p) >> (j * 2);
     } else if (bits_per_tag == 4) {
       p += (j >> 1);
-      tag = *((uint8_t*)p) >> ((j & 1) << 2);
+      tag = *((uint8_t *)p) >> ((j & 1) << 2);
     } else if (bits_per_tag == 8) {
       p += j;
-      tag = *((uint8_t*)p);
+      tag = *((uint8_t *)p);
     } else if (bits_per_tag == 12) {
       p += j + (j >> 1);
-      tag = *((uint16_t*)p) >> ((j & 1) << 2);
+      tag = *((uint16_t *)p) >> ((j & 1) << 2);
     } else if (bits_per_tag == 16) {
       p += (j << 1);
-      tag = *((uint16_t*)p);
+      tag = *((uint16_t *)p);
     } else if (bits_per_tag == 32) {
-      tag = ((uint32_t*)p)[j];
+      tag = ((uint32_t *)p)[j];
     }
     return tag & TAGMASK;
   }
 
   // write tag to pos(i,j)
   inline void WriteTag(const size_t i, const size_t j, const uint32_t t) {
-    char* p = buckets_[i].bits_;
+    char *p = buckets_[i].bits_;
     uint32_t tag = t & TAGMASK;
     /* following code only works for little-endian */
     if (bits_per_tag == 2) {
-      *((uint8_t*)p) |= tag << (2 * j);
+      *((uint8_t *)p) |= tag << (2 * j);
     } else if (bits_per_tag == 4) {
       p += (j >> 1);
       if ((j & 1) == 0) {
-        *((uint8_t*)p) &= 0xf0;
-        *((uint8_t*)p) |= tag;
+        *((uint8_t *)p) &= 0xf0;
+        *((uint8_t *)p) |= tag;
       } else {
-        *((uint8_t*)p) &= 0x0f;
-        *((uint8_t*)p) |= (tag << 4);
+        *((uint8_t *)p) &= 0x0f;
+        *((uint8_t *)p) |= (tag << 4);
       }
     } else if (bits_per_tag == 8) {
-      ((uint8_t*)p)[j] = tag;
+      ((uint8_t *)p)[j] = tag;
     } else if (bits_per_tag == 12) {
       p += (j + (j >> 1));
       if ((j & 1) == 0) {
-        ((uint16_t*)p)[0] &= 0xf000;
-        ((uint16_t*)p)[0] |= tag;
+        ((uint16_t *)p)[0] &= 0xf000;
+        ((uint16_t *)p)[0] |= tag;
       } else {
-        ((uint16_t*)p)[0] &= 0x000f;
-        ((uint16_t*)p)[0] |= (tag << 4);
+        ((uint16_t *)p)[0] &= 0x000f;
+        ((uint16_t *)p)[0] |= (tag << 4);
       }
     } else if (bits_per_tag == 16) {
-      ((uint16_t*)p)[j] = tag;
+      ((uint16_t *)p)[j] = tag;
     } else if (bits_per_tag == 32) {
-      ((uint32_t*)p)[j] = tag;
+      ((uint32_t *)p)[j] = tag;
     }
 
     return;
@@ -117,11 +117,11 @@ class SingleTable {
 
   inline bool FindTagInBuckets(const size_t i1, const size_t i2,
                                const uint32_t tag) const {
-    const char* p1 = buckets_[i1].bits_;
-    const char* p2 = buckets_[i2].bits_;
+    const char *p1 = buckets_[i1].bits_;
+    const char *p2 = buckets_[i2].bits_;
 
-    uint64_t v1 = *((uint64_t*)p1);
-    uint64_t v2 = *((uint64_t*)p2);
+    uint64_t v1 = *((uint64_t *)p1);
+    uint64_t v2 = *((uint64_t *)p2);
 
     // caution: unaligned access & assuming little endian
     if (bits_per_tag == 4 && tags_per_bucket == 4) {
@@ -143,20 +143,20 @@ class SingleTable {
   inline bool FindTagInBucket(const size_t i, const uint32_t tag) const {
     // caution: unaligned access & assuming little endian
     if (bits_per_tag == 4 && tags_per_bucket == 4) {
-      const char* p = buckets_[i].bits_;
-      uint64_t v = *(uint64_t*)p;  // uint16_t may suffice
+      const char *p = buckets_[i].bits_;
+      uint64_t v = *(uint64_t *)p;  // uint16_t may suffice
       return hasvalue4(v, tag);
     } else if (bits_per_tag == 8 && tags_per_bucket == 4) {
-      const char* p = buckets_[i].bits_;
-      uint64_t v = *(uint64_t*)p;  // uint32_t may suffice
+      const char *p = buckets_[i].bits_;
+      uint64_t v = *(uint64_t *)p;  // uint32_t may suffice
       return hasvalue8(v, tag);
     } else if (bits_per_tag == 12 && tags_per_bucket == 4) {
-      const char* p = buckets_[i].bits_;
-      uint64_t v = *(uint64_t*)p;
+      const char *p = buckets_[i].bits_;
+      uint64_t v = *(uint64_t *)p;
       return hasvalue12(v, tag);
     } else if (bits_per_tag == 16 && tags_per_bucket == 4) {
-      const char* p = buckets_[i].bits_;
-      uint64_t v = *(uint64_t*)p;
+      const char *p = buckets_[i].bits_;
+      uint64_t v = *(uint64_t *)p;
       return hasvalue16(v, tag);
     } else {
       for (size_t j = 0; j < tags_per_bucket; j++) {
@@ -178,7 +178,7 @@ class SingleTable {
   }  // DeleteTagFromBucket
 
   inline bool InsertTagToBucket(const size_t i, const uint32_t tag,
-                                const bool kickout, uint32_t& oldtag) {
+                                const bool kickout, uint32_t &oldtag) {
     for (size_t j = 0; j < tags_per_bucket; j++) {
       if (ReadTag(i, j) == 0) {
         WriteTag(i, j, tag);

@@ -6,7 +6,7 @@
 
 namespace cuckoofilter {
 
-std::string PrintUtil::bytes_to_hex(const char* data, size_t len) {
+std::string PrintUtil::bytes_to_hex(const char *data, size_t len) {
   std::string hexstr = "";
   static const char hexes[] = "0123456789ABCDEF ";
 
@@ -19,8 +19,8 @@ std::string PrintUtil::bytes_to_hex(const char* data, size_t len) {
   return hexstr;
 };
 
-std::string PrintUtil::bytes_to_hex(const std::string& s) {
-  return bytes_to_hex((const char*)s.data(), s.size());
+std::string PrintUtil::bytes_to_hex(const std::string &s) {
+  return bytes_to_hex((const char *)s.data(), s.size());
 };
 
 }  // namespace cuckoofilter
