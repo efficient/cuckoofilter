@@ -65,11 +65,6 @@ class SimdBlockFilter {
 
   SimdBlockFilter(const SimdBlockFilter&) = delete;
   void operator=(const SimdBlockFilter&) = delete;
-
-  [[gnu::target("default")]] void FailWithoutAvx2() {
-    throw ::std::runtime_error("SimdBlockFilter does not work without AVX2 instructions");
-  }
-  [[gnu::target("avx2")]] void FailWithoutAvx2(){}
 };
 
 SimdBlockFilter::SimdBlockFilter(const int log_heap_space)
@@ -80,7 +75,9 @@ SimdBlockFilter::SimdBlockFilter(const int log_heap_space)
     // too large.
     directory_mask_((1ull << ::std::min(63, log_num_buckets_)) - 1),
     directory_(nullptr) {
-  FailWithoutAvx2();
+  if (!__builtin_cpu_supports("avx2")) {
+    throw ::std::runtime_error("SimdBlockFilter does not work without AVX2 instructions");
+  }
   const size_t alloc_size = 1ull << (log_num_buckets_ + LOG_BUCKET_BYTE_SIZE);
   const int malloc_failed =
       posix_memalign(reinterpret_cast<void**>(&directory_), 64, alloc_size);
