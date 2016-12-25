@@ -139,7 +139,7 @@ template <>
 struct FilterAPI<SimdBlockFilter> {
   using Table = SimdBlockFilter;
   static Table ConstructFromAddCount(size_t add_count) {
-    Table ans(ceil(log2(add_count * 12.50 / CHAR_BIT)));
+    Table ans(ceil(log2(add_count * 8.0 / CHAR_BIT)));
     return ans;
   }
   static void Add(uint64_t key, Table* table) {
@@ -249,6 +249,6 @@ int main(int argc, char * argv[]) {
 
   cf = FilterBenchmark<SimdBlockFilter>(add_count, to_add, to_lookup);
 
-  cout << setw(NAME_WIDTH) << "SimdBlock12.5" << cf << endl;
+  cout << setw(NAME_WIDTH) << "SimdBlock8" << cf << endl;
 
 }
