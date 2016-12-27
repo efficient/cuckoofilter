@@ -12,7 +12,12 @@ SRC = ../src/hashutil.cc
 
 .PHONY: all
 
-all: conext-table3.exe conext-figure5.exe bulk-insert-and-query.exe
+BINS = conext-table3.exe conext-figure5.exe bulk-insert-and-query.exe
+
+all: $(BINS)
+
+clean:
+	/bin/rm -f $(BINS)
 
 %.exe: %.cc ${HEADERS} ${SRC} Makefile
 	$(CXX) $(CXXFLAGS) $< -o $@ $(SRC) $(LDFLAGS)
