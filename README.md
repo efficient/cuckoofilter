@@ -55,7 +55,7 @@ $ export LDFLAGS="-L/usr/local/Cellar/openssl/1.0.2j/lib"
 $ export CFLAGS="-I/usr/local/Cellar/openssl/1.0.2j/include"
 ```
 
-To build the example (`example/text.cc`):
+To build the example (`example/test.cc`):
 ```bash
 $ make test
 ```
