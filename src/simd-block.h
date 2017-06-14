@@ -49,6 +49,10 @@ class SimdBlockFilter {
  public:
   // Consumes at most (1 << log_heap_space) bytes on the heap:
   explicit SimdBlockFilter(const int log_heap_space);
+  SimdBlockFilter(SimdBlockFilter&& that)
+    : log_num_buckets_(that.log_num_buckets_),
+      directory_mask_(that.directory_mask_),
+      directory_(that.directory_) {}
   ~SimdBlockFilter() noexcept;
   void Add(const uint64_t key) noexcept;
   bool Find(const uint64_t key) const noexcept;
@@ -71,6 +75,9 @@ SimdBlockFilter::SimdBlockFilter(const int log_heap_space)
     // too large.
     directory_mask_((1ull << ::std::min(63, log_num_buckets_)) - 1),
     directory_(nullptr) {
+  if (!__builtin_cpu_supports("avx2")) {
+    throw ::std::runtime_error("SimdBlockFilter does not work without AVX2 instructions");
+  }
   const size_t alloc_size = 1ull << (log_num_buckets_ + LOG_BUCKET_BYTE_SIZE);
   const int malloc_failed =
       posix_memalign(reinterpret_cast<void**>(&directory_), 64, alloc_size);
