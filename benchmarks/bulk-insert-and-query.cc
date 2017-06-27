@@ -137,8 +137,8 @@ struct FilterAPI<CuckooFilter<ItemType, bits_per_item, TableType>> {
 };
 
 template <>
-struct FilterAPI<SimdBlockFilter> {
-  using Table = SimdBlockFilter;
+struct FilterAPI<SimdBlockFilter<>> {
+  using Table = SimdBlockFilter<>;
   static Table ConstructFromAddCount(size_t add_count) {
     Table ans(ceil(log2(add_count * 8.0 / CHAR_BIT)));
     return ans;
@@ -248,7 +248,7 @@ int main(int argc, char * argv[]) {
 
   cout << setw(NAME_WIDTH) << "SemiSort17" << cf << endl;
 
-  cf = FilterBenchmark<SimdBlockFilter>(add_count, to_add, to_lookup);
+  cf = FilterBenchmark<SimdBlockFilter<>>(add_count, to_add, to_lookup);
 
   cout << setw(NAME_WIDTH) << "SimdBlock8" << cf << endl;
 

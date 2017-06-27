@@ -25,6 +25,7 @@
 using uint32_t = ::std::uint32_t;
 using uint64_t = ::std::uint64_t;
 
+template<typename HashFamily = ::cuckoofilter::TwoIndependentMultiplyShift>
 class SimdBlockFilter {
  private:
   // The filter is divided up into Buckets:
@@ -46,13 +47,16 @@ class SimdBlockFilter {
 
   Bucket* directory_;
 
+  HashFamily hasher_;
+
  public:
   // Consumes at most (1 << log_heap_space) bytes on the heap:
   explicit SimdBlockFilter(const int log_heap_space);
   SimdBlockFilter(SimdBlockFilter&& that)
     : log_num_buckets_(that.log_num_buckets_),
       directory_mask_(that.directory_mask_),
-      directory_(that.directory_) {}
+      directory_(that.directory_),
+      hasher_(that.hasher_) {}
   ~SimdBlockFilter() noexcept;
   void Add(const uint64_t key) noexcept;
   bool Find(const uint64_t key) const noexcept;
@@ -67,14 +71,16 @@ class SimdBlockFilter {
   void operator=(const SimdBlockFilter&) = delete;
 };
 
-SimdBlockFilter::SimdBlockFilter(const int log_heap_space)
+template<typename HashFamily>
+SimdBlockFilter<HashFamily>::SimdBlockFilter(const int log_heap_space)
   :  // Since log_heap_space is in bytes, we need to convert it to the number of Buckets
      // we will use.
     log_num_buckets_(::std::max(1, log_heap_space - LOG_BUCKET_BYTE_SIZE)),
     // Don't use log_num_buckets_ if it will lead to undefined behavior by a shift that is
     // too large.
     directory_mask_((1ull << ::std::min(63, log_num_buckets_)) - 1),
-    directory_(nullptr) {
+    directory_(nullptr),
+    hasher_() {
   if (!__builtin_cpu_supports("avx2")) {
     throw ::std::runtime_error("SimdBlockFilter does not work without AVX2 instructions");
   }
@@ -85,15 +91,17 @@ SimdBlockFilter::SimdBlockFilter(const int log_heap_space)
   memset(directory_, 0, alloc_size);
 }
 
-SimdBlockFilter::~SimdBlockFilter() noexcept {
+template<typename HashFamily>
+SimdBlockFilter<HashFamily>::~SimdBlockFilter() noexcept {
   free(directory_);
   directory_ = nullptr;
 }
 
 // The SIMD reinterpret_casts technically violate C++'s strict aliasing rules. However, we
 // compile with -fno-strict-aliasing.
-[[gnu::always_inline]] inline __m256i SimdBlockFilter::MakeMask(
-    const uint32_t hash) noexcept {
+template <typename HashFamily>
+[[gnu::always_inline]] inline __m256i
+SimdBlockFilter<HashFamily>::MakeMask(const uint32_t hash) noexcept {
   const __m256i ones = _mm256_set1_epi32(1);
   // Odd contants for hashing:
   const __m256i rehash = _mm256_setr_epi32(0x47b6137bU, 0x44974d91U, 0x8824ad5bU,
@@ -108,17 +116,20 @@ SimdBlockFilter::~SimdBlockFilter() noexcept {
   return _mm256_sllv_epi32(ones, hash_data);
 }
 
-[[gnu::always_inline]] inline void SimdBlockFilter::Add(const uint64_t key) noexcept {
-  const auto hash = ::cuckoofilter::HashUtil::TwoIndependentMultiplyShift(key);
+template <typename HashFamily>
+[[gnu::always_inline]] inline void
+SimdBlockFilter<HashFamily>::Add(const uint64_t key) noexcept {
+  const auto hash = hasher_(key);
   const uint32_t bucket_idx = hash & directory_mask_;
   const __m256i mask = MakeMask(hash >> log_num_buckets_);
   __m256i* const bucket = &reinterpret_cast<__m256i*>(directory_)[bucket_idx];
   _mm256_store_si256(bucket, _mm256_or_si256(*bucket, mask));
 }
 
-[[gnu::always_inline]] inline bool SimdBlockFilter::Find(const uint64_t key) const
-    noexcept {
-  const auto hash = ::cuckoofilter::HashUtil::TwoIndependentMultiplyShift(key);
+template <typename HashFamily>
+[[gnu::always_inline]] inline bool
+SimdBlockFilter<HashFamily>::Find(const uint64_t key) const noexcept {
+  const auto hash = hasher_(key);
   const uint32_t bucket_idx = hash & directory_mask_;
   const __m256i mask = MakeMask(hash >> log_num_buckets_);
   const __m256i bucket = reinterpret_cast<__m256i*>(directory_)[bucket_idx];
