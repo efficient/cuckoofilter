@@ -726,7 +726,7 @@ static void *OPENSSL_zalloc(size_t num)
 
 EVP_MD_CTX *EVP_MD_CTX_new(void)
 {
-   return OPENSSL_zalloc(sizeof(EVP_MD_CTX));
+   return (EVP_MD_CTX *)OPENSSL_zalloc(sizeof(EVP_MD_CTX));
 }
 
 void EVP_MD_CTX_free(EVP_MD_CTX *ctx)
