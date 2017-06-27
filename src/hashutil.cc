@@ -714,6 +714,7 @@ uint32_t HashUtil::NullHash(const void *buf, size_t length,
  * Implemented as proposed by https://wiki.openssl.org/index.php/OpenSSL_1.1.0_Changes
  */
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
+#include <string.h>
 static void *OPENSSL_zalloc(size_t num)
 {
   void *ret = OPENSSL_malloc(num);
