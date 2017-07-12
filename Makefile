@@ -1,4 +1,6 @@
 CC = g++
+AR = ar
+PREFIX=/usr/local
 
 # Uncomment one of the following to switch between debug and opt mode
 #OPT = -O3 -DNDEBUG
@@ -12,6 +14,7 @@ LIBOBJECTS = \
 	./src/hashutil.o \
 
 HEADERS = $(wildcard src/*.h)
+ALIB = libcuckoofilter.a
 
 TEST = test
 
@@ -26,3 +29,15 @@ test: example/test.o $(LIBOBJECTS)
 %.o: %.cc ${HEADERS} Makefile
 	$(CC) $(CFLAGS) $< -o $@
 
+$(ALIB): $(LIBOBJECTS)
+	$(AR) rcs $@ $(LIBOBJECTS)
+
+.PHONY: install
+install: $(ALIB)
+	install -D -m 0755 $(HEADERS) -t $(DESTDIR)$(PREFIX)/include/cuckoofilter
+	install -D -m 0755 $< -t $(DESTDIR)$(PREFIX)/lib
+
+.PHONY: uninstall
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/lib/$(ALIB)
+	rm -rf $(DESTDIR)$(PREFIX)/include/cuckoofilter
