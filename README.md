@@ -66,6 +66,15 @@ $ cd benchmarks
 $ make
 ```
 
+Install
+-------
+To install the cuckoofilter library:
+```bash
+$ make install
+```
+By default, the header files will be placed in `/usr/local/include/cuckoofilter`
+and the static library at `/usr/local/lib/cuckoofilter.a`.
+
 
 Contributing
 ------------
