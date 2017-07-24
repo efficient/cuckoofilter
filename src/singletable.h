@@ -5,8 +5,6 @@
 
 #include <sstream>
 
-#include <xmmintrin.h>
-
 #include "bitsutil.h"
 #include "debug.h"
 #include "printutil.h"
