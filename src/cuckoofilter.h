@@ -2,6 +2,7 @@
 #define CUCKOO_FILTER_CUCKOO_FILTER_H_
 
 #include <assert.h>
+#include <algorithm>
 
 #include "debug.h"
 #include "hashutil.h"
@@ -87,7 +88,7 @@ class CuckooFilter {
  public:
   explicit CuckooFilter(const size_t max_num_keys) : num_items_(0), victim_(), hasher_() {
     size_t assoc = 4;
-    size_t num_buckets = upperpower2(max_num_keys / assoc);
+    size_t num_buckets = upperpower2(std::max<uint64_t>(1, max_num_keys / assoc));
     double frac = (double)max_num_keys / num_buckets / assoc;
     if (frac > 0.96) {
       num_buckets <<= 1;
