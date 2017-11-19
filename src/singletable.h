@@ -18,6 +18,10 @@ class SingleTable {
   static const size_t kBytesPerBucket =
       (bits_per_tag * kTagsPerBucket + 7) >> 3;
   static const uint32_t kTagMask = (1ULL << bits_per_tag) - 1;
+  // NOTE: accomodate extra buckets if necessary to avoid overrun
+  // as we always read a uint64
+  static const size_t kPaddingBuckets =
+    ((((kBytesPerBucket + 7) / 8) * 8) - 1) / kBytesPerBucket;
 
   struct Bucket {
     char bits_[kBytesPerBucket];
@@ -29,8 +33,8 @@ class SingleTable {
 
  public:
   explicit SingleTable(const size_t num) : num_buckets_(num) {
-    buckets_ = new Bucket[num_buckets_];
-    memset(buckets_, 0, kBytesPerBucket * num_buckets_);
+    buckets_ = new Bucket[num_buckets_ + kPaddingBuckets];
+    memset(buckets_, 0, kBytesPerBucket * (num_buckets_ + kPaddingBuckets));
   }
 
   ~SingleTable() { 
