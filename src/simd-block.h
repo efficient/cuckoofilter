@@ -25,7 +25,7 @@
 using uint32_t = ::std::uint32_t;
 using uint64_t = ::std::uint64_t;
 
-template<typename HashFamily = ::cuckoofilter::TwoIndependentMultiplyShift>
+template<typename HashFamily = ::cuckoofilter::UniversalMultiplyShift>
 class SimdBlockFilter {
  private:
   // The filter is divided up into Buckets:
@@ -41,6 +41,17 @@ class SimdBlockFilter {
   // log_num_buckets_ is the log (base 2) of the number of buckets in the directory:
   const int log_num_buckets_;
 
+  // These are shifts used in handling the hash value. They are defined as
+  //
+  //   compl_= 64 - log_num_buckets_
+  //   compl32_ = std::max(0, 32 - log_num_buckets_)
+  //
+  // The idea is that shifting left by compl_ shifts out all but
+  // log_num_buckets_ of a hash value: the high-order bits. Similarly, compl32_
+  // is how much to shift the value to get the next 32 highest order bits. These
+  // are pre-calculated for efficiency reasons.
+  const int compl_, compl32_;
+
   // directory_mask_ is (1 << log_num_buckets_) - 1. It is precomputed in the contructor
   // for efficiency reasons:
   const uint32_t directory_mask_;
@@ -54,6 +65,8 @@ class SimdBlockFilter {
   explicit SimdBlockFilter(const int log_heap_space);
   SimdBlockFilter(SimdBlockFilter&& that)
     : log_num_buckets_(that.log_num_buckets_),
+      compl_(64 - log_num_buckets_),
+      compl32_(std::max(0, 32 - log_num_buckets_)),
       directory_mask_(that.directory_mask_),
       directory_(that.directory_),
       hasher_(that.hasher_) {}
@@ -76,6 +89,8 @@ SimdBlockFilter<HashFamily>::SimdBlockFilter(const int log_heap_space)
   :  // Since log_heap_space is in bytes, we need to convert it to the number of Buckets
      // we will use.
     log_num_buckets_(::std::max(1, log_heap_space - LOG_BUCKET_BYTE_SIZE)),
+    compl_(64 - log_num_buckets_),
+    compl32_(std::max(0, 32 - log_num_buckets_)),
     // Don't use log_num_buckets_ if it will lead to undefined behavior by a shift that is
     // too large.
     directory_mask_((1ull << ::std::min(63, log_num_buckets_)) - 1),
@@ -120,8 +135,8 @@ template <typename HashFamily>
 [[gnu::always_inline]] inline void
 SimdBlockFilter<HashFamily>::Add(const uint64_t key) noexcept {
   const auto hash = hasher_(key);
-  const uint32_t bucket_idx = hash & directory_mask_;
-  const __m256i mask = MakeMask(hash >> log_num_buckets_);
+  const uint32_t bucket_idx = hash >> compl_;
+  const __m256i mask = MakeMask(hash >> compl32_);
   __m256i* const bucket = &reinterpret_cast<__m256i*>(directory_)[bucket_idx];
   _mm256_store_si256(bucket, _mm256_or_si256(*bucket, mask));
 }
@@ -130,8 +145,8 @@ template <typename HashFamily>
 [[gnu::always_inline]] inline bool
 SimdBlockFilter<HashFamily>::Find(const uint64_t key) const noexcept {
   const auto hash = hasher_(key);
-  const uint32_t bucket_idx = hash & directory_mask_;
-  const __m256i mask = MakeMask(hash >> log_num_buckets_);
+  const uint32_t bucket_idx = hash >> compl_;
+  const __m256i mask = MakeMask(hash >> compl32_);
   const __m256i bucket = reinterpret_cast<__m256i*>(directory_)[bucket_idx];
   // We should return true if 'bucket' has a one wherever 'mask' does. _mm256_testc_si256
   // takes the negation of its first argument and ands that with its second argument. In

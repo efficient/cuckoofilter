@@ -66,6 +66,29 @@ class TwoIndependentMultiplyShift {
   }
 };
 
+// See M. Dietzfelbinger, T. Hagerup, J. Katajainen, and M. Penttonen. A
+// reliable randomized algorithm for the closest-pair problem. J. Algorithms,
+// 25:1951, 1997.
+//
+// This family is almost-universal, but the high-order bits must be
+// used before the low-order ones. That is, h(x) should be restricted
+// to a range by shifting right, not by and-ing with a mask.
+class UniversalMultiplyShift {
+  uint64_t multiply_;
+
+ public:
+  UniversalMultiplyShift() {
+    ::std::random_device random;
+    multiply_ = random();
+    multiply_ = multiply_ << 32;
+    multiply_ |= random() | 1;
+  }
+
+  uint64_t operator()(uint64_t key) const {
+    return multiply_ * key;
+  }
+};
+
 // See Patrascu and Thorup's "The Power of Simple Tabulation Hashing"
 class SimpleTabulation {
   uint64_t tables_[sizeof(uint64_t)][1 << CHAR_BIT];
