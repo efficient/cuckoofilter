@@ -14,6 +14,10 @@ namespace cuckoofilter {
 // the most naive table implementation: one huge bit array
 template <size_t bits_per_tag>
 class SingleTable {
+  static_assert(bits_per_tag == 2 || bits_per_tag == 4 || bits_per_tag == 8 ||
+                    bits_per_tag == 12 || bits_per_tag == 16 ||
+                    bits_per_tag == 32,
+                "bits_per_tag must be 2, 4, 8, 12, 16, or 32");
   static const size_t kTagsPerBucket = 4;
   static const size_t kBytesPerBucket =
       (bits_per_tag * kTagsPerBucket + 7) >> 3;
