@@ -8,7 +8,7 @@ LDFLAGS+= -Wall -lpthread -lssl -lcrypto
 
 HEADERS = $(wildcard ../src/*.h) *.h
 
-SRC = ../src/hashutil.cc
+SRC = ../src/hashutil.cc ../src/memory.cc
 
 .PHONY: all
 

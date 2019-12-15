@@ -12,6 +12,7 @@ LDFLAGS+= -Wall -lpthread -lssl -lcrypto
 
 LIBOBJECTS = \
 	./src/hashutil.o \
+	./src/memory.o
 
 HEADERS = $(wildcard src/*.h)
 ALIB = libcuckoofilter.a
