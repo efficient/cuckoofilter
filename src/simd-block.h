@@ -21,6 +21,7 @@
 #include <immintrin.h>
 
 #include "hashutil.h"
+#include "memory.h"
 
 using uint32_t = ::std::uint32_t;
 using uint64_t = ::std::uint64_t;
@@ -41,6 +42,10 @@ class SimdBlockFilter {
   // log_num_buckets_ is the log (base 2) of the number of buckets in the directory:
   const int log_num_buckets_;
 
+  // The number of bytes returned by the allocation function; might be
+  // slightly more than sizeof(Bucket) * (1 << log_num_buckets_)
+  uint64_t actual_bytes_;
+
   // directory_mask_ is (1 << log_num_buckets_) - 1. It is precomputed in the contructor
   // for efficiency reasons:
   const uint32_t directory_mask_;
@@ -54,13 +59,14 @@ class SimdBlockFilter {
   explicit SimdBlockFilter(const int log_heap_space);
   SimdBlockFilter(SimdBlockFilter&& that)
     : log_num_buckets_(that.log_num_buckets_),
+      actual_bytes_(that.actual_bytes_),
       directory_mask_(that.directory_mask_),
       directory_(that.directory_),
       hasher_(that.hasher_) {}
   ~SimdBlockFilter() noexcept;
   void Add(const uint64_t key) noexcept;
   bool Find(const uint64_t key) const noexcept;
-  uint64_t SizeInBytes() const { return sizeof(Bucket) * (1ull << log_num_buckets_); }
+  uint64_t SizeInBytes() const { return actual_bytes_; }
 
  private:
   // A helper function for Insert()/Find(). Turns a 32-bit hash into a 256-bit Bucket
@@ -85,15 +91,14 @@ SimdBlockFilter<HashFamily>::SimdBlockFilter(const int log_heap_space)
     throw ::std::runtime_error("SimdBlockFilter does not work without AVX2 instructions");
   }
   const size_t alloc_size = 1ull << (log_num_buckets_ + LOG_BUCKET_BYTE_SIZE);
-  const int malloc_failed =
-      posix_memalign(reinterpret_cast<void**>(&directory_), 64, alloc_size);
-  if (malloc_failed) throw ::std::bad_alloc();
-  memset(directory_, 0, alloc_size);
+  directory_ = reinterpret_cast<Bucket *>(
+      cuckoofilter::Allocate(alloc_size, &actual_bytes_));
 }
 
 template<typename HashFamily>
 SimdBlockFilter<HashFamily>::~SimdBlockFilter() noexcept {
-  free(directory_);
+  const size_t alloc_size = 1ull << (log_num_buckets_ + LOG_BUCKET_BYTE_SIZE);
+  cuckoofilter::Deallocate(directory_, alloc_size);
   directory_ = nullptr;
 }
 

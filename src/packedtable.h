@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "debug.h"
+#include "memory.h"
 #include "permencoding.h"
 #include "printutil.h"
 
@@ -20,6 +21,7 @@ class PackedTable {
 
   // using a pointer adds one more indirection
   size_t len_;
+  size_t bytes_;
   size_t num_buckets_;
   char *buckets_;
   PermEncoding perm_;
@@ -29,12 +31,11 @@ class PackedTable {
     // NOTE(binfan): use 7 extra bytes to avoid overrun as we
     // always read a uint64
     len_ = kBytesPerBucket * num_buckets_ + 7;
-    buckets_ = new char[len_];
-    memset(buckets_, 0, len_); 
+    buckets_ = reinterpret_cast<char *>(Allocate(len_, &bytes_));
   }
 
   ~PackedTable() { 
-    delete[] buckets_; 
+    Deallocate(buckets_, len_);
   }
 
   size_t NumBuckets() const {
@@ -46,7 +47,7 @@ class PackedTable {
   }
 
   size_t SizeInBytes() const { 
-    return len_; 
+    return bytes_;
   }
 
   std::string Info() const {

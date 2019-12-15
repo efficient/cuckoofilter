@@ -7,6 +7,7 @@
 
 #include "bitsutil.h"
 #include "debug.h"
+#include "memory.h"
 #include "printutil.h"
 
 namespace cuckoofilter {
@@ -30,15 +31,17 @@ class SingleTable {
   // using a pointer adds one more indirection
   Bucket *buckets_;
   size_t num_buckets_;
+  size_t bytes_;
 
  public:
   explicit SingleTable(const size_t num) : num_buckets_(num) {
-    buckets_ = new Bucket[num_buckets_ + kPaddingBuckets];
-    memset(buckets_, 0, kBytesPerBucket * (num_buckets_ + kPaddingBuckets));
+    const size_t bytes = sizeof(Bucket) * (num_buckets_ + kPaddingBuckets);
+    buckets_ = reinterpret_cast<Bucket *>(Allocate(bytes, &bytes_));
   }
 
-  ~SingleTable() { 
-    delete[] buckets_;
+  ~SingleTable() noexcept(!kMmap) {
+    const size_t bytes = sizeof(Bucket) * (num_buckets_ + kPaddingBuckets);
+    Deallocate(buckets_, bytes);
   }
 
   size_t NumBuckets() const {
@@ -46,7 +49,7 @@ class SingleTable {
   }
 
   size_t SizeInBytes() const { 
-    return kBytesPerBucket * num_buckets_; 
+    return bytes_;
   }
 
   size_t SizeInTags() const { 
