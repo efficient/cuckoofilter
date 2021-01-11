@@ -99,6 +99,23 @@ class CuckooFilter {
 
   ~CuckooFilter() { delete table_; }
 
+  void Serialize(std::ofstream& handler) {
+    uint64_t bytes = sizeof(VictimCache);
+    std::cout << "Write from file: with size: " << bytes << std::endl;
+    handler.write(reinterpret_cast<char*>(&victim_), bytes);
+    table_->Serialize(handler);
+    hasher_.Serialize(handler);
+  }
+
+  void Deserialize(std::ifstream& handler) {
+    char* buffer = reinterpret_cast<char*>(&victim_);
+    uint64_t length = sizeof(VictimCache);
+    std::cout << "Read from file: with size: " << length << std::endl;
+    handler.read(buffer, length);
+    table_->Deserialize(handler);
+    hasher_.Deserialize(handler);
+  }
+
   // Add an item to the filter.
   Status Add(const ItemType &item);
 

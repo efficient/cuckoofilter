@@ -3,6 +3,8 @@
 
 #include <assert.h>
 
+#include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include "bitsutil.h"
@@ -51,6 +53,19 @@ class SingleTable {
 
   size_t SizeInTags() const { 
     return kTagsPerBucket * num_buckets_; 
+  }
+
+  void Serialize(std::ofstream& handler) {
+    uint64_t bytes = kBytesPerBucket * (num_buckets_ + kPaddingBuckets);
+    std::cout << "Write to file: "<< "total bytes: " << bytes << std::endl;
+    handler.write(reinterpret_cast<char*>(buckets_), bytes);
+  }
+
+  void Deserialize(std::ifstream& handler) {
+    char* buffer = reinterpret_cast<char*>(buckets_);
+    uint64_t length = kBytesPerBucket * (num_buckets_ + kPaddingBuckets);
+    std::cout << "Read from file: with size: " << length << std::endl;
+    handler.read(buffer, length);
   }
 
   std::string Info() const {
