@@ -1,6 +1,8 @@
 #ifndef CUCKOO_FILTER_PACKED_TABLE_H_
 #define CUCKOO_FILTER_PACKED_TABLE_H_
 
+#include <iostream>
+#include <fstream>
 #include <sstream>
 #include <utility>
 
@@ -425,6 +427,17 @@ class PackedTable {
     DPRINTF(DEBUG_TABLE, "PackedTable::InsertTagToBucket, insert failed \n");
     return false;
   }
+
+  void Serialize(std::ofstream& handler) {
+    std::cout << "Write to file: "<< "total bytes: " << len_ << std::endl;
+    handler.write(buckets_, len_);
+  }
+
+  void Deserialize(std::ifstream& handler) {
+    std::cout << "Read from file: with size: " << len_ << std::endl;
+    handler.read(buckets_, len_);
+  }
+
 
   // inline size_t NumTagsInBucket(const size_t i) {
   //     size_t num = 0;

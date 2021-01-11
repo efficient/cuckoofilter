@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <iostream>
+#include <fstream>
 
 #include <string>
 
@@ -64,6 +66,27 @@ class TwoIndependentMultiplyShift {
   uint64_t operator()(uint64_t key) const {
     return (add_ + multiply_ * static_cast<decltype(multiply_)>(key)) >> 64;
   }
+
+  void Serialize(std::ofstream& handler) {
+      uint64_t bytes = sizeof(multiply_);
+      handler.write(reinterpret_cast<char*>(&multiply_), bytes);
+      std::cout << "Write multiply_ to file: total bytes: " << bytes << std::endl;
+      bytes = sizeof(add_);
+      handler.write(reinterpret_cast<char*>(&add_), bytes);
+      std::cout << "Write add_ to file: total bytes: " << bytes << std::endl;
+  }
+
+  void Deserialize(std::ifstream& handler) {
+      char* buffer = reinterpret_cast<char*>(&multiply_);
+      uint64_t length = sizeof(multiply_);
+      std::cout << "Read multiply_ from file: with size: " << length << std::endl;
+      handler.read(buffer, length);
+      buffer = reinterpret_cast<char*>(&add_);
+      length = sizeof(add_);
+      std::cout << "Read add_ from file: with size: " << length << std::endl;
+      handler.read(buffer, length);
+  }
+
 };
 
 // See Patrascu and Thorup's "The Power of Simple Tabulation Hashing"
@@ -86,6 +109,31 @@ class SimpleTabulation {
       result ^= tables_[i][reinterpret_cast<uint8_t *>(&key)[i]];
     }
     return result;
+  }
+  void Serialize(std::ofstream& handler) {
+      int row = sizeof(uint64_t);
+      int col = (1 << CHAR_BIT);
+      uint64_t bytes = sizeof(uint64_t);
+      uint64_t total_bytes = row * col * bytes;
+      for (int i = 0; i < row; ++i) {
+          for (int j = 0; j < col; ++j) {
+              handler.write(reinterpret_cast<char*>(&tables_[i][j]), bytes);
+          }
+      }
+      std::cout << "Write table_ to file: total bytes: " << total_bytes << std::endl;
+  }
+
+  void Deserialize(std::ifstream& handler) {
+      int row = sizeof(uint64_t);
+      int col = (1 << CHAR_BIT);
+      uint64_t bytes = sizeof(uint64_t);
+      uint64_t total_bytes = row * col * bytes;
+      for (int i = 0; i < row; ++i) {
+          for (int j = 0; j < col; ++j) {
+              handler.read(reinterpret_cast<char*>(&tables_[i][j]), bytes);
+          }
+      }
+      std::cout << "Read table_ to file: total bytes: " << total_bytes << std::endl;
   }
 };
 }
