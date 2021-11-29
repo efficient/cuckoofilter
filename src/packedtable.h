@@ -13,6 +13,10 @@ namespace cuckoofilter {
 // Using Permutation encoding to save 1 bit per tag
 template <size_t bits_per_tag>
 class PackedTable {
+  static_assert(bits_per_tag == 5 || bits_per_tag == 6 || bits_per_tag == 7 ||
+                    bits_per_tag == 8 || bits_per_tag == 9 ||
+                    bits_per_tag == 13 || bits_per_tag == 17,
+                "bits_per_tag must be 5, 6, 7, 8, 9, 13, or 17");
   static const size_t kDirBitsPerTag = bits_per_tag - 4;
   static const size_t kBitsPerBucket = (3 + kDirBitsPerTag) * 4;
   static const size_t kBytesPerBucket = (kBitsPerBucket + 7) >> 3;
